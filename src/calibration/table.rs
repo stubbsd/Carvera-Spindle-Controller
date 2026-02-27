@@ -222,6 +222,7 @@ mod tests {
     use crate::calibration::{
         CAL_START_RPM, CAL_STEP_RPM, CAL_STEPS, CalibrationPoint, CalibrationTable,
     };
+    use serial_test::serial;
 
     /// Drop guard that resets shared static calibration state even on panic.
     struct CalTestGuard;
@@ -274,12 +275,14 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_no_calibration() {
         let _guard = CalTestGuard::new();
         assert_eq!(correct_duty(5000), 5000);
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_with_calibration() {
         let _guard = CalTestGuard::new();
         let table = two_point_cal_table(500, 300, 1000, 550);
@@ -307,6 +310,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_bypass_during_calibration() {
         let _guard = CalTestGuard::new();
         let table = two_point_cal_table(500, 300, 1000, 550);
@@ -324,6 +328,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_apply_and_get_calibration() {
         let _guard = CalTestGuard::new();
         let mut table = CalibrationTable::default();
@@ -353,6 +358,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_has_calibration_without_data() {
         let _guard = CalTestGuard::new();
         assert!(!has_calibration());
@@ -360,6 +366,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_get_calibration_point_out_of_bounds() {
         let _guard = CalTestGuard::new();
         assert!(get_calibration_point(0).is_none());
@@ -367,6 +374,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_identical_measured_duties() {
         let _guard = CalTestGuard::new();
         let table = two_point_cal_table(500, 300, 750, 300);
@@ -377,6 +385,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_single_point() {
         let _guard = CalTestGuard::new();
         let mut table = CalibrationTable::default();
@@ -395,6 +404,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_full_range_monotonic() {
         let _guard = CalTestGuard::new();
         let table = full_386_point_cal_table(50);
@@ -415,6 +425,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_zero_duty_input() {
         let _guard = CalTestGuard::new();
         let table = two_point_cal_table(500, 200, 1000, 450);
@@ -424,6 +435,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_zero_input_does_not_exceed_enable_threshold() {
         let _guard = CalTestGuard::new();
         let table = two_point_cal_table(CAL_START_RPM, 400, 1500, 800);
@@ -443,6 +455,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_duty_to_calibrated_rpm_no_calibration() {
         let _guard = CalTestGuard::new();
         for duty in [0u16, 100, 500, 2447, 5000, 9786, 10000] {
@@ -459,6 +472,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_duty_to_calibrated_rpm_exact_at_calibration_point() {
         let _guard = CalTestGuard::new();
         let table = CalibrationTable {
@@ -492,6 +506,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_duty_to_calibrated_rpm_regression_3500() {
         let _guard = CalTestGuard::new();
         let table = CalibrationTable {
@@ -523,6 +538,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_duty_to_calibrated_rpm_zero_duty_clamped() {
         let _guard = CalTestGuard::new();
         let table = CalibrationTable {
@@ -551,6 +567,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_interpolation_s2501_no_large_jump() {
         let _guard = CalTestGuard::new();
         let table = CalibrationTable {
@@ -589,6 +606,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_interpolation_degenerate_bracket() {
         let _guard = CalTestGuard::new();
         let table = CalibrationTable {
@@ -621,6 +639,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_interpolation_off_step_values() {
         let _guard = CalTestGuard::new();
         let offset: u16 = 20;
@@ -654,6 +673,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_interpolate_rpm_at_last_calibration_point() {
         let _guard = CalTestGuard::new();
         let mut table = CalibrationTable::default();
@@ -683,6 +703,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_correct_duty_large_duty_near_10000() {
         let _guard = CalTestGuard::new();
         let table = full_386_point_cal_table(30);
@@ -700,6 +721,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_clear_calibration() {
         let _guard = CalTestGuard::new();
         let mut table = CalibrationTable::default();
@@ -722,12 +744,14 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_read_calibration_table_none_when_empty() {
         let _guard = CalTestGuard::new();
         assert!(read_calibration_table().is_none());
     }
 
     #[test]
+    #[serial]
     fn test_read_calibration_table_roundtrip() {
         let _guard = CalTestGuard::new();
         let mut table = CalibrationTable::default();
