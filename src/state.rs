@@ -378,6 +378,7 @@ pub mod pins {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
 
     /// Reset all error atomics to prevent cross-test pollution.
     fn reset_error_state() {
@@ -393,6 +394,7 @@ mod tests {
     // --- current_ma round-trip ---
 
     #[test]
+    #[serial]
     fn test_current_ma_round_trip() {
         reset_error_state();
         set_current_ma(4200);
@@ -408,6 +410,7 @@ mod tests {
     // --- report_overcurrent latching ---
 
     #[test]
+    #[serial]
     fn test_overcurrent_latches_safety_shutdown() {
         reset_error_state();
         assert!(!is_safety_shutdown());
@@ -419,6 +422,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_overcurrent_latch_is_permanent() {
         reset_error_state();
         report_overcurrent();
@@ -433,6 +437,7 @@ mod tests {
     // --- report_thermal latching ---
 
     #[test]
+    #[serial]
     fn test_thermal_latches_safety_shutdown() {
         reset_error_state();
         assert!(!is_safety_shutdown());
@@ -444,6 +449,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_thermal_latch_is_permanent() {
         reset_error_state();
         report_thermal();
@@ -457,6 +463,7 @@ mod tests {
     // --- stall alert (not permanently latched) ---
 
     #[test]
+    #[serial]
     fn test_stall_alert_follows_state() {
         reset_error_state();
         report_stall_alert(true);
@@ -469,6 +476,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_stall_latched_shows_stall_cleared() {
         reset_error_state();
         // Stall alert released but visual latch still active
@@ -484,6 +492,7 @@ mod tests {
     // --- escon alert (follows pin state) ---
 
     #[test]
+    #[serial]
     fn test_escon_alert_follows_state() {
         reset_error_state();
         report_escon_alert(true);
@@ -499,6 +508,7 @@ mod tests {
     // --- priority ordering ---
 
     #[test]
+    #[serial]
     fn test_overcurrent_has_highest_priority() {
         reset_error_state();
         report_escon_alert(true);
@@ -511,6 +521,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_thermal_beats_stall_and_escon() {
         reset_error_state();
         report_escon_alert(true);
@@ -522,6 +533,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_stall_beats_escon() {
         reset_error_state();
         report_escon_alert(true);
@@ -531,6 +543,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_errors_returns_none() {
         reset_error_state();
         assert!(!any_error_active());
@@ -540,6 +553,7 @@ mod tests {
     // --- any_error_active OR behavior ---
 
     #[test]
+    #[serial]
     fn test_any_error_active_or_behavior() {
         reset_error_state();
         assert!(!any_error_active());
