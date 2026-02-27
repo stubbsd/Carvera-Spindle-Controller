@@ -46,6 +46,7 @@ pub use threshold::{ThresholdDetector, ThresholdStatus};
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
 
     // --- PIO Debounce Timing tests ---
     //
@@ -169,6 +170,7 @@ mod tests {
     // --- Cross-module integration: duty -> calibrated RPM -> display formatting ---
 
     #[test]
+    #[serial]
     fn test_pipeline_raw_duty_to_calibrated_rpm_no_cal() {
         // Without calibration data, duty_to_calibrated_rpm falls back to the
         // standard linear formula: rpm = raw_duty * CARVERA_SPINDLE_MAX_RPM / 10000
@@ -191,6 +193,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_pipeline_with_calibration_correction() {
         use crate::calibration::{
             CalibrationPoint, CalibrationTable, apply_calibration, clear_calibration, correct_duty,
