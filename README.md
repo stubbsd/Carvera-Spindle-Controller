@@ -969,10 +969,10 @@ Each sequence holds each speed for 1 second, then stops the spindle. The firmwar
 
 ## Carvera Firmware Configuration (Required)
 
-This project requires the [Carvera Community Firmware](https://github.com/Carvera-Community/Carvera_Community_Firmware). The stock Carvera firmware will not work because it lacks open-loop PWM mode and alarm pin support.
+This project requires the [Carvera Community Firmware](https://github.com/Carvera-Community/Carvera_Community_Firmware) with open-loop spindle support. Open-loop mode is not yet merged into the community firmware — there is an [open pull request (#265)](https://github.com/Carvera-Community/Carvera_Community_Firmware/pull/265) adding this feature. In the meantime, you can build the firmware yourself from that PR branch. The stock Carvera firmware will not work because it lacks open-loop PWM mode and alarm pin support.
 
 **Why custom firmware is needed:**
-- **Open-loop PWM mode** (`spindle.open_loop true`) - The stock firmware uses closed-loop PID speed control. Combined with the ESCON's own closed-loop controller, this creates two PID loops fighting each other, causing oscillation and start/stop cycling. Open-loop mode sends PWM proportional to requested speed, letting the ESCON handle all speed regulation.
+- **Open-loop PWM mode** (`spindle.open_loop true`) — [PR #265](https://github.com/Carvera-Community/Carvera_Community_Firmware/pull/265) — The stock firmware uses closed-loop PID speed control. Combined with the ESCON's own closed-loop controller, this creates two PID loops fighting each other, causing oscillation and start/stop cycling. Open-loop mode sends PWM proportional to requested speed, letting the ESCON handle all speed regulation.
 - **Alarm pin monitoring** (`spindle.alarm_pin p2.11!`) - Halts the machine when the Pico detects a spindle stall or fault. Not available in stock firmware.
 - **20kHz PWM** (`spindle.pwm_period 50`) - Higher frequency for smoother control. Stock uses 1kHz.
 
