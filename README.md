@@ -289,54 +289,169 @@ Buck Converter OUT- ---+--- LCD Pin 1 (VSS)
 
 ## ESCON Studio Configuration
 
-### 1. Connect ESCON to PC
+Complete ESCON 50/5 configuration using ESCON Studio (Motion Studio 1.1). Connect the ESCON to your PC via USB, open ESCON Studio, and configure each section as shown below.
 
-- Connect ESCON 50/5 to PC via USB
-- Open ESCON Studio software
-- Click "Connect" to establish communication
+### 1. Motor/Sensors > Motor
 
-### 2. Configure Digital Input 1 (PWM Set Value)
+![Motor settings](docs/escon/01_motor.png)
 
-1. Navigate to: **Digital Inputs/Outputs** -> **Digital Input 1**
-2. Set **Function**: `PWM Set Value`
-3. Configure scaling:
-   - **10% duty cycle** = 0 rpm (minimum)
-   - **90% duty cycle** = 12500 rpm (maximum)
+| Setting | Value |
+|---------|-------|
+| Motor Type | maxon EC motor |
+| Speed Constant | 242.2 rpm/V |
+| Thermal Time Constant Winding | 4.0 s |
+| Number of Pole Pairs | 4 |
+| Max. Permissible Speed | 12500.0 rpm |
+| Nominal Current | 4.1000 A |
+| Max. Output Current Limit | 8.2000 A |
 
-### 3. Configure Digital Input 2 (Enable)
+### 2. Motor/Sensors > Detection of Rotor Position
 
-1. Navigate to: **Digital Inputs/Outputs** -> **Digital Input 2**
-2. Set **Function**: `Enable`
-3. Set **Logic**: `Active High` (HIGH = enabled, LOW = disabled)
+![Rotor position settings](docs/escon/02_rotor_position.png)
 
-### 4. Configure Analog Output (Current Monitoring)
+| Setting | Value |
+|---------|-------|
+| Sensor Type | Digital Hall Sensors |
+| Hall Sensor Polarity | **Inverted** |
 
-If using current monitoring:
+### 3. Motor/Sensors > Speed Sensor
 
-1. Navigate to: **Analog Inputs/Outputs** -> **Analog Output 1**
-2. Set **Function**: `Current Actual Value (Averaged)`
-3. Configure scaling:
-   - **-4V** = -5200 mA
-   - **+4V** = +5200 mA (matches `CURRENT_AT_3V3_MA` in firmware)
+Uses the available Hall Sensors (configured in step 2). No additional settings needed.
 
-> **Note**: The ESCON outputs 0-4V but the RP2350 ADC accepts 0-3.3V. Readings above 3.3V will clip at the ADC maximum, but current monitoring still works for typical operating ranges.
+### 4. Controller > Mode of Operation
 
-### 5. Save Configuration
+![Mode of operation](docs/escon/03_mode_of_operation.png)
 
-1. Click **Download** to write settings to ESCON
+| Setting | Value |
+|---------|-------|
+| Mode | **Speed Controller (Closed Loop)** |
+
+The ESCON handles closed-loop speed regulation internally. The Pico sends an open-loop PWM command, and the ESCON's own PID controller maintains the target speed.
+
+### 5. Controller > Enable
+
+![Enable settings](docs/escon/04_enable.png)
+
+| Setting | Value |
+|---------|-------|
+| Enable Type | Enable CCW |
+| Enable CCW Input | Digital Input 2 |
+| Enable CCW Logic | **High active** |
+
+The Pico drives GPIO5 HIGH to enable the motor. "CCW" refers to the default rotation direction — the motor spins when DIN2 is HIGH.
+
+### 6. Controller > Set Value
+
+![Set value settings](docs/escon/05_set_value.png)
+
+| Setting | Value |
+|---------|-------|
+| Type | PWM Set Value |
+| Input | Digital Input 1 |
+| Speed at 10.0% | **0.0 rpm** |
+| Speed at 90.0% | **12500.0 rpm** |
+
+The ESCON maps the incoming PWM duty cycle (10-90%) linearly to the speed range. The Pico firmware clamps its output to this 10-90% range to match.
+
+### 7. Controller > Current Limit
+
+![Current limit settings](docs/escon/06_current_limit.png)
+
+| Setting | Value |
+|---------|-------|
+| Type | Fixed Current Limit |
+| Current Limit | **5.0000 A** |
+
+### 8. Controller > Speed Ramp
+
+| Setting | Value |
+|---------|-------|
+| Type | Fixed Ramp |
+| Acceleration | 5000.0 rpm/s |
+| Deceleration | 5000.0 rpm/s |
+
+### 9. Controller > Minimal Speed
+
+| Setting | Value |
+|---------|-------|
+| Minimal Speed | 0.0 rpm |
+
+### 10. Controller > Offset
+
+| Setting | Value |
+|---------|-------|
+| Type | Fixed Offset |
+| Offset | 0.0 rpm |
+
+### 11. Inputs/Outputs > Digital Inputs and Outputs
+
+![Digital I/O overview](docs/escon/07_digital_io_overview.png)
+
+| Input / Output | Functionality | Notes |
+|----------------|---------------|-------|
+| Digital Input 1 | PWM - Set Value | Pico GPIO4 -> ESCON J5-1 |
+| Digital Input 2 | Enable CCW | Pico GPIO5 -> ESCON J5-2 |
+| Digital Output 3 | Ready | ESCON -> Pico GPIO8 (alert input) |
+| Digital Output 4 | Commutation Frequency | ESCON -> Carvera encoder input (4 PPR) |
+
+#### Digital Output 3: Ready (Low active)
+
+![DOUT3 Ready settings](docs/escon/09_digital_output3_ready.png)
+
+| Setting | Value |
+|---------|-------|
+| Functionality | Ready |
+| Polarity | **Low active** |
+
+DOUT3 is wired to Pico GPIO8 as an alert signal. **Low active** means the output is LOW when the ESCON is ready (normal), and HIGH when there's an error. The Pico reads this with a pull-up — a HIGH on GPIO8 triggers the ALERT state.
+
+#### Digital Output 4: Commutation Frequency
+
+![DOUT4 Commutation Frequency](docs/escon/10_digital_output4_commutation.png)
+
+| Setting | Value |
+|---------|-------|
+| Functionality | Commutation Frequency |
+
+DOUT4 outputs 4 pulses per revolution. This is wired directly to the Carvera's encoder input so it can track spindle speed for feedback.
+
+### 12. Inputs/Outputs > Analog Inputs
+
+All analog inputs are set to **None** (not used).
+
+### 13. Inputs/Outputs > Analog Outputs
+
+![Analog output settings](docs/escon/08_analog_output_current.png)
+
+| Output | Functionality | Scaling |
+|--------|---------------|---------|
+| Analog Output 1 | Actual Current Averaged | 0.000V = 0.0000A, 3.300V = **5.2000A** |
+| Analog Output 2 | None | — |
+
+Analog Output 1 is wired to Pico GPIO26 (ADC) for current monitoring. The scaling means 3.3V corresponds to 5.2A, which matches `CURRENT_AT_3V3_MA` in the firmware.
+
+> **Note**: The ESCON can output up to 4V, but the RP2350 ADC accepts 0-3.3V. Readings above 3.3V clip at the ADC maximum, but current monitoring still works for typical operating ranges.
+
+### 14. Save Configuration
+
+1. Click **Download All Parameters** to write settings to the ESCON
 2. Power cycle the ESCON to apply changes
 
 ### ESCON Configuration Summary
 
 | Setting | Value |
 |---------|-------|
-| Digital Input 1 Function | PWM Set Value |
-| PWM 10% | 0 rpm |
-| PWM 90% | 12500 rpm |
-| Digital Input 2 Function | Enable |
-| Enable Logic | Active High |
-
-> **Note on minimum speed**: The ESCON is configured with 0 RPM at 10% duty cycle. The firmware's enable threshold handles the minimum speed cutoff.
+| Motor Type | maxon EC motor, 4 pole pairs |
+| Max Speed | 12500 rpm |
+| Hall Sensor Polarity | Inverted |
+| Mode of Operation | Speed Controller (Closed Loop) |
+| Enable | DIN2, High active |
+| PWM Set Value | DIN1, 10%=0rpm, 90%=12500rpm |
+| Current Limit | 5.0A (fixed) |
+| Speed Ramp | 5000 rpm/s (accel & decel) |
+| DOUT3 | Ready, Low active (alert to Pico) |
+| DOUT4 | Commutation Frequency (feedback to Carvera) |
+| Analog Out 1 | Actual Current Averaged, 3.3V=5.2A |
 
 ---
 
@@ -767,7 +882,7 @@ If something goes wrong:
 
 ## Things You Should Absolutely Not Do (Learned by Experience)
 
-> **⚠️ A cautionary tale in four acts, each less dignified than the last.**
+> **⚠️ A cautionary tale in five acts, each less dignified than the last.**
 
 **Act I: "I'll just swap this wire real quick"**
 
@@ -784,6 +899,10 @@ It happened again. Made another hot-swap attempt (because apparently I don't lea
 **Act IV: "I'll just solder this LCD cable nice and neat"**
 
 Soldered up the LCD display with a lovely cable, routed it carefully through the back of the machine. Professional job. Then remembered the back panel needed to go on — which meant disconnecting everything, feeding the cables through a hole, and re-soldering. Did that. Then discovered the hole got covered by the panel mounting. Re-soldered the whole thing a third time. The LCD now works perfectly. The cable survived all three attempts. The roll of solder wick did not.
+
+**Act V: "I'll just tighten this screw with the USB still plugged in"**
+
+Tried to screw the ESCON controller into its mounting with a right-angled micro USB cable still plugged in — figured it would be fine. The screw forced the board up against the cable — pop. Ripped the micro USB socket clean off the ESCON board. Unplug the USB cable before screwing the ESCON in.
 
 **The moral:** Turn the power off before touching anything. Measure twice before soldering anything. And for the love of all that is holy, check whether the panel fits before you route a single wire. The 30 seconds you save will cost you weeks of debugging and a small pile of dead components.
 
