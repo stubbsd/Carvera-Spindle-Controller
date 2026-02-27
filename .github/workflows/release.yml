@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv8m.main-none-eabihf
+
+      - name: Install flip-link
+        run: cargo install flip-link
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Prepare release artifacts
+        run: |
+          cp target/thumbv8m.main-none-eabihf/release/carvera_spindle carvera_spindle.elf
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: carvera_spindle.elf
+          generate_release_notes: true
+          body: |
+            ## Flashing
+
+            Download `carvera_spindle.elf` and flash with [picotool](https://github.com/raspberrypi/picotool):
+
+            ```bash
+            # macOS: brew install picotool
+            # Hold BOOTSEL on Pico 2 while connecting USB, then:
+            picotool load -u -v -x -t elf carvera_spindle.elf
+            ```
+
+            See the [README](https://github.com/Cloud-Badger/Carvera-Spindle-Controller#quick-start) for wiring and configuration instructions.

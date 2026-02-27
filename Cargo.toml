@@ -1,0 +1,71 @@
+[package]
+name = "carvera_spindle"
+version = "0.1.0"
+edition = "2024"
+authors = ["David Palombella"]
+description = "Pico 2 firmware for interfacing Makera Carvera CNC with ESCON 50/5 servo motor controller"
+repository = "https://github.com/Cloud-Badger/Carvera-Spindle-Controller"
+license = "MIT"
+keywords = ["carvera", "cnc", "spindle", "escon", "embedded", "rp2350", "pico2"]
+categories = ["embedded", "hardware-support", "no-std"]
+readme = "README.md"
+rust-version = "1.85"
+
+[lib]
+name = "carvera_spindle"
+path = "src/lib.rs"
+
+[[bin]]
+name = "carvera_spindle"
+path = "src/main.rs"
+
+[dependencies]
+# Embassy dependencies - only for embedded target
+embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "544a674e7c20d95fc5ef4d7cee6e837a1e4f9004", features = ["arch-cortex-m", "executor-thread", "executor-interrupt"], optional = true }
+embassy-rp = { git = "https://github.com/embassy-rs/embassy", rev = "544a674e7c20d95fc5ef4d7cee6e837a1e4f9004", features = ["rp235xa", "time-driver", "rt", "imagedef-secure-exe"], optional = true }
+embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "544a674e7c20d95fc5ef4d7cee6e837a1e4f9004", optional = true }
+embassy-sync = { git = "https://github.com/embassy-rs/embassy", rev = "544a674e7c20d95fc5ef4d7cee6e837a1e4f9004", optional = true }
+embassy-futures = { git = "https://github.com/embassy-rs/embassy", rev = "544a674e7c20d95fc5ef4d7cee6e837a1e4f9004", optional = true }
+
+cortex-m = { version = "0.7", features = ["critical-section-single-core"], optional = true }
+cortex-m-rt = { version = "0.7", optional = true }
+
+# PIO assembly support (re-exported by embassy-rp but we need it directly for pio_asm! macro)
+pio = { version = "0.3", optional = true }
+fixed = { version = "1.30", optional = true }
+
+defmt = { version = "0.3", optional = true }
+defmt-rtt = { version = "0.4", optional = true }
+panic-probe = { version = "0.3", features = ["print-defmt"], optional = true }
+
+panic-halt = { version = "1.0.0", optional = true }
+
+[dev-dependencies]
+rand = "0.8"
+
+[features]
+default = ["embedded"]
+embedded = [
+    "dep:embassy-executor",
+    "dep:embassy-rp",
+    "dep:embassy-time",
+    "dep:embassy-sync",
+    "dep:embassy-futures",
+    "dep:cortex-m",
+    "dep:cortex-m-rt",
+    "dep:defmt",
+    "dep:defmt-rtt",
+    "dep:panic-probe",
+    "dep:pio",
+    "dep:fixed",
+]
+panic-halt = ["dep:panic-halt"]
+
+[profile.release]
+debug = 2
+lto = true
+opt-level = "s"
+
+[profile.dev]
+debug = 2
+opt-level = 1

@@ -1,0 +1,10 @@
+[target.thumbv8m.main-none-eabihf]
+# flip-link places stack at start of RAM so overflows cause HardFault instead of silent corruption
+rustflags = ["-C", "linker=flip-link"]
+runner = "probe-rs run --chip RP2350"
+
+[build]
+target = "thumbv8m.main-none-eabihf"
+
+[env]
+DEFMT_LOG = "debug"

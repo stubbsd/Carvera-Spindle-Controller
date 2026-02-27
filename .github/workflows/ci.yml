@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run unit tests
+        # Override .cargo/config.toml target to run on host
+        run: cargo test --lib --no-default-features --target x86_64-unknown-linux-gnu
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Run Clippy
+        # Override .cargo/config.toml target to run on host
+        run: cargo clippy --lib --no-default-features --target x86_64-unknown-linux-gnu -- -D warnings
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt -- --check
+
+  build:
+    name: Build for RP2350
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv8m.main-none-eabihf
+
+      - name: Install flip-link
+        run: cargo install flip-link
+
+      - name: Build release
+        run: cargo build --release
+
+  size-analysis:
+    name: Binary Size Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv8m.main-none-eabihf
+
+      - name: Install tools
+        run: |
+          cargo install flip-link
+          cargo install cargo-bloat
+          cargo install cargo-binutils
+          rustup component add llvm-tools-preview
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Binary size summary
+        run: |
+          echo "=== Binary Size Summary ==="
+          cargo size --release --target thumbv8m.main-none-eabihf --bin carvera_spindle -- -A
+
+      - name: Largest functions (cargo-bloat)
+        run: |
+          echo "=== Top 40 Largest Functions ==="
+          echo "Large functions often indicate high stack usage."
+          echo ""
+          cargo bloat --release --target thumbv8m.main-none-eabihf -n 40
+
+      - name: Crate sizes
+        run: |
+          echo "=== Crate Size Breakdown ==="
+          cargo bloat --release --target thumbv8m.main-none-eabihf --crates
+
+      - name: Size check
+        run: |
+          echo "=== Size Threshold Check ==="
+          # Get .text size in bytes
+          TEXT_SIZE=$(cargo size --release --target thumbv8m.main-none-eabihf --bin carvera_spindle -- -A | grep '\.text' | awk '{print $2}')
+          echo "Text section size: $TEXT_SIZE bytes"
+
+          # Warn if text section exceeds 100KB (leaves room in 4MB flash)
+          if [ "$TEXT_SIZE" -gt 102400 ]; then
+            echo "WARNING: Text section is larger than 100KB. Consider optimizing."
+          else
+            echo "Text section size is within acceptable limits."
+          fi
