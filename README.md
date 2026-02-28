@@ -291,11 +291,12 @@ Buck Converter OUT- ---+--- LCD Pin 1 (VSS)
 
 Complete ESCON 50/5 configuration using ESCON Studio (Motion Studio 1.1). Connect the ESCON to your PC via USB, open ESCON Studio, and configure each section as shown below.
 
-> **A note on screenshot quality:** These are photos of an LCD monitor, not proper screenshots — hence the moiré patterns and general sadness. Unfortunately they can't be retaken, because the ESCON's USB port was ripped clean off the PCB (see [Act V](#things-you-should-absolutely-not-do-learned-by-experience)).
+> **A note on screenshots:** The original ESCON Studio screenshots were photos of an LCD monitor — moiré patterns and all — because the ESCON's USB port was ripped clean off the PCB before proper screenshots could be taken (see [Act V](#things-you-should-absolutely-not-do-learned-by-experience)). The images below are AI-regenerated recreations of those dialogs, built from the original photos and configuration data. They match the real UI layout and values but are not pixel-perfect captures. The [original photos](docs/escon/) are preserved for reference.
 
 ### 1. Motor/Sensors > Motor
 
-![Motor settings](docs/escon/01_motor.png)
+![Motor settings](docs/escon_generated/01_motor.png)
+([original photo](docs/escon/01_motor.png))
 
 | Setting | Value |
 |---------|-------|
@@ -309,7 +310,8 @@ Complete ESCON 50/5 configuration using ESCON Studio (Motion Studio 1.1). Connec
 
 ### 2. Motor/Sensors > Detection of Rotor Position
 
-![Rotor position settings](docs/escon/02_rotor_position.png)
+![Rotor position settings](docs/escon_generated/02_rotor_position.png)
+([original photo](docs/escon/02_rotor_position.png))
 
 | Setting | Value |
 |---------|-------|
@@ -318,11 +320,15 @@ Complete ESCON 50/5 configuration using ESCON Studio (Motion Studio 1.1). Connec
 
 ### 3. Motor/Sensors > Speed Sensor
 
+![Speed Sensor settings](docs/escon_generated/03_speed_sensor.png)
+([original photo](docs/escon/03_speed_sensor.png))
+
 Uses the available Hall Sensors (configured in step 2). No additional settings needed.
 
 ### 4. Controller > Mode of Operation
 
-![Mode of operation](docs/escon/03_mode_of_operation.png)
+![Mode of operation](docs/escon_generated/04_mode_of_operation.png)
+([original photo](docs/escon/04_mode_of_operation.png))
 
 | Setting | Value |
 |---------|-------|
@@ -332,7 +338,8 @@ The ESCON handles closed-loop speed regulation internally. The Pico sends an ope
 
 ### 5. Controller > Enable
 
-![Enable settings](docs/escon/04_enable.png)
+![Enable settings](docs/escon_generated/05_enable.png)
+([original photo](docs/escon/05_enable.png))
 
 | Setting | Value |
 |---------|-------|
@@ -344,7 +351,8 @@ The Pico drives GPIO5 HIGH to enable the motor. "CCW" refers to the default rota
 
 ### 6. Controller > Set Value
 
-![Set value settings](docs/escon/05_set_value.png)
+![Set value settings](docs/escon_generated/06_set_value.png)
+([original photo](docs/escon/06_set_value.png))
 
 | Setting | Value |
 |---------|-------|
@@ -357,7 +365,8 @@ The ESCON maps the incoming PWM duty cycle (10-90%) linearly to the speed range.
 
 ### 7. Controller > Current Limit
 
-![Current limit settings](docs/escon/06_current_limit.png)
+![Current limit settings](docs/escon_generated/07_current_limit.png)
+([original photo](docs/escon/07_current_limit.png))
 
 | Setting | Value |
 |---------|-------|
@@ -365,6 +374,9 @@ The ESCON maps the incoming PWM duty cycle (10-90%) linearly to the speed range.
 | Current Limit | **5.0000 A** |
 
 ### 8. Controller > Speed Ramp
+
+![Speed Ramp settings](docs/escon_generated/08_speed_ramp.png)
+([original photo](docs/escon/08_speed_ramp.png))
 
 | Setting | Value |
 |---------|-------|
@@ -374,11 +386,17 @@ The ESCON maps the incoming PWM duty cycle (10-90%) linearly to the speed range.
 
 ### 9. Controller > Minimal Speed
 
+![Minimal Speed settings](docs/escon_generated/09_minimal_speed.png)
+([original photo](docs/escon/09_minimal_speed.png))
+
 | Setting | Value |
 |---------|-------|
 | Minimal Speed | 0.0 rpm |
 
 ### 10. Controller > Offset
+
+![Offset settings](docs/escon_generated/10_offset.png)
+([original photo](docs/escon/10_offset.png))
 
 | Setting | Value |
 |---------|-------|
@@ -387,7 +405,8 @@ The ESCON maps the incoming PWM duty cycle (10-90%) linearly to the speed range.
 
 ### 11. Inputs/Outputs > Digital Inputs and Outputs
 
-![Digital I/O overview](docs/escon/07_digital_io_overview.png)
+![Digital I/O overview](docs/escon_generated/11_digital_io_overview.png)
+([original photo](docs/escon/11_digital_io_overview.png))
 
 | Input / Output | Functionality | Notes |
 |----------------|---------------|-------|
@@ -398,7 +417,8 @@ The ESCON maps the incoming PWM duty cycle (10-90%) linearly to the speed range.
 
 #### Digital Output 3: Ready (Low active)
 
-![DOUT3 Ready settings](docs/escon/09_digital_output3_ready.png)
+![DOUT3 Ready settings](docs/escon_generated/12_digital_output3_ready.png)
+([original photo](docs/escon/12_digital_output3_ready.png))
 
 | Setting | Value |
 |---------|-------|
@@ -409,7 +429,8 @@ DOUT3 is wired to Pico GPIO8 as an alert signal. **Low active** means the output
 
 #### Digital Output 4: Commutation Frequency
 
-![DOUT4 Commutation Frequency](docs/escon/10_digital_output4_commutation.png)
+![DOUT4 Commutation Frequency](docs/escon_generated/13_digital_output4_commutation.png)
+([original photo](docs/escon/13_digital_output4_commutation.png))
 
 | Setting | Value |
 |---------|-------|
@@ -419,11 +440,15 @@ DOUT4 outputs 4 pulses per revolution. This is wired directly to the Carvera's e
 
 ### 12. Inputs/Outputs > Analog Inputs
 
+![Analog Inputs settings](docs/escon_generated/14_analog_inputs.png)
+([original photo](docs/escon/14_analog_inputs.png))
+
 All analog inputs are set to **None** (not used).
 
 ### 13. Inputs/Outputs > Analog Outputs
 
-![Analog output settings](docs/escon/08_analog_output_current.png)
+![Analog output settings](docs/escon_generated/15_analog_output_current.png)
+([original photo](docs/escon/15_analog_output_current.png))
 
 | Output | Functionality | Scaling |
 |--------|---------------|---------|
