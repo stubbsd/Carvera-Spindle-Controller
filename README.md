@@ -6,6 +6,10 @@
 
 Raspberry Pi Pico 2 firmware for interfacing a Makera Carvera CNC with an ESCON 50/5 servo motor controller.
 
+[![Installed controller](docs/installed_controller.jpg)](docs/installed_controller_hires.jpg)
+
+*The Pico 2 controller installed inside the Carvera, wired up with the optional 16x2 LCD display and DC-DC buck converter. Wago 221 lever connectors are used for the signal wiring, with the buck converter (48V to 5V) powering the LCD. (Click image for high-resolution version.)*
+
 ## Why This Project? (vs. DFR1036 Approach)
 
 There's an excellent [Instructables guide](https://www.instructables.com/Carvera-Spindle-Power-Upgrade-Stock-Motor/) that uses a DFR1036 PWM-to-analog converter (~£7) with the ESCON. That's a simpler approach that works well. So why use a Pico instead?
@@ -230,6 +234,17 @@ Connect a 10K potentiometer between the buck converter 5V and GND, with the wipe
 ```
 
 Adjust for best contrast - turn clockwise for darker text.
+
+### LCD Cable Routing (Optional)
+
+The LCD cable needs to be routed out through the bottom of the Carvera's electronics bay. The gap between the panels is tight — use a length of piano wire (or similar stiff wire) as a guide to fish the cable through.
+
+| | | |
+|:---:|:---:|:---:|
+| ![Cable gap](docs/lcd_cable_routing_1.jpg) | ![Cable routed under machine](docs/lcd_cable_routing_2.jpg) | ![Cable exit point](docs/lcd_cable_routing_3.jpg) |
+| *The gap between the panels where the cable exits* | *Cable routed underneath the machine* | *Cable emerging from the bottom of the bay* |
+
+> **Tip:** Route the cable *before* soldering the LCD connector — it's much easier to feed a bare cable through the gap. See [Act IV](#things-you-should-absolutely-not-do-learned-by-experience) for what happens when you don't.
 
 ### Pico 2 Pinout Diagram
 
