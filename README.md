@@ -291,6 +291,8 @@ Buck Converter OUT- ---+--- LCD Pin 1 (VSS)
 
 Complete ESCON 50/5 configuration using ESCON Studio (Motion Studio 1.1). Connect the ESCON to your PC via USB, open ESCON Studio, and configure each section as shown below.
 
+> **A note on screenshot quality:** These are photos of an LCD monitor, not proper screenshots — hence the moiré patterns and general sadness. Unfortunately they can't be retaken, because the ESCON's USB port was ripped clean off the PCB (see [Act V](#things-you-should-absolutely-not-do-learned-by-experience)).
+
 ### 1. Motor/Sensors > Motor
 
 ![Motor settings](docs/escon/01_motor.png)
