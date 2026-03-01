@@ -36,7 +36,11 @@ There's an excellent [Instructables guide](https://www.instructables.com/Carvera
 - [x] You're comfortable with basic soldering
 - [x] You want stall detection and control
 - [x] You want a real-time readout of spindle speed
-- [x] The thought of your spindle being ~9 RPM off because the Carvera can't quite express the right duty cycle keeps you up at night ([there's a calibration system for that](docs/carvera_calibration_analysis.md))
+- [x] You want better spindle speed control
+  - Single feedback loop — the ESCON handles closed-loop speed regulation instead of two PID controllers fighting each other
+  - More accurate requested speed via a [calibration system](docs/carvera_calibration_analysis.md) that compensates for the Carvera's PWM quantization
+  - Real-time display of the actual requested RPM (after calibration correction)
+  - Faster time-to-target — no oscillation from duelling control loops
 
 > **⚠️ Carvera configuration required before use.** This project needs the [Carvera Community Firmware](https://github.com/Carvera-Community/Carvera_Community_Firmware) and several config changes (open-loop PWM mode, alarm pin, 20kHz PWM). The stock firmware will not work. **See [Carvera Firmware Configuration](#carvera-firmware-configuration-required) for what to change**, or [docs/CARVERA_CONFIG.md](docs/CARVERA_CONFIG.md) for step-by-step instructions.
 
@@ -73,6 +77,11 @@ ESCON DOUT (4 PPR)  ----direct---->  Carvera Encoder Input
 - **[DC-DC buck converter](https://www.amazon.co.uk/dp/B07XLJXXZ2)** 48V to 5V - powers the LCD from the ESCON's 48V supply
 
 > **Note:** The LCD is entirely optional. The firmware runs fine without it - spindle control works identically with or without a display connected.
+
+**Optional extras (3D printed):**
+- **[Raspberry Pi Pico Case](https://www.printables.com/model/226610-raspberry-pi-pico-case)** - Snap-fit two-part case with open back for wires and Bootsel button cutout
+- **[16x2 LCD Housing](https://www.printables.com/model/97206-16x2-lcd-housing)** - Angled housing for the LCD display with universal front panel (45° or 90° back)
+- **[Cable Tie Mount](https://www.printables.com/model/227957-cable-tie-mount)** - Adhesive/screw-mount cable tie anchor points for wire management
 
 ---
 
@@ -1074,6 +1083,10 @@ For the detailed investigations behind this approach, see:
 
 ### How to Calibrate
 
+![Calibration Demo](docs/calibration_demo.gif)
+
+*The LCD backlight turns blue during calibration and shows progress (step number, RPM, and duty cycle percentage). The full process takes about 2 minutes.*
+
 Calibration is triggered by running a specific G-code file that plays a 3-note "musical" trigger sequence, followed by a sweep through 386 speed steps (750 to 20,000 RPM in 50 RPM increments).
 
 **Step 1:** Upload the calibration G-code file to your Carvera and run it:
@@ -1137,6 +1150,37 @@ This project requires the [Carvera Community Firmware](https://github.com/Carver
 - **Alarm pin monitoring** (`spindle.alarm_pin p2.11!`) - Halts the machine when the Pico detects a spindle stall or fault. Not available in stock firmware.
 - **20kHz PWM** (`spindle.pwm_period 50`) - Higher frequency for smoother control. Stock uses 1kHz.
 
+### Building the Community Firmware from PR #265
+
+Until [PR #265](https://github.com/Carvera-Community/Carvera_Community_Firmware/pull/265) is merged, you need to build the firmware yourself. The build uses a `VERSION` parameter that sets the version string reported by the `version` command on the machine. This version string **must** follow the `X.Y.Zc` format (e.g., `2.1.0c-dev`) — the [Carvera Community Controller](https://github.com/Carvera-Community/Carvera_Controller) uses a regex to parse it and enable community firmware features. If the version doesn't match (e.g., `master-abc1234` from a raw branch build), the controller won't recognise it as community firmware. This causes issues such as the jog buttons being permanently disabled, because the controller falls back to a legacy method of detecting playback state that misinterprets uninitialized status fields.
+
+```bash
+# Clone the firmware and check out the PR branch
+git clone https://github.com/Carvera-Community/Carvera_Community_Firmware.git
+cd Carvera_Community_Firmware
+git fetch origin pull/265/head:open-loop-spindle
+git checkout open-loop-spindle
+
+# Build with a version string the controller will recognise
+./build/build.sh --clean VERSION=2.1.0c-dev
+```
+
+The build outputs `LPC1768/main.bin`. Flash it to your Carvera using one of these methods:
+
+- **Carvera Controller**: Hamburger menu (top right) -> Update -> Firmware -> Update -> navigate to `firmware.bin` -> Upload -> Reset
+- **[Carvera CLI](https://github.com/hagmonk/carvera-cli/)**: `uvx carvera-cli -d <ip-or-usb-port> upload-firmware --reset ./LPC1768/main.bin`
+- **microSD card**: Copy as `firmware.bin`, remove `FIRMWARE.CUR`, insert and power on
+
+See the firmware repo's [DEVELOPER.md](https://github.com/Carvera-Community/Carvera_Community_Firmware/blob/master/DEVELOPER.md) for full build and flashing instructions.
+
+After flashing, verify the version is recognised:
+```
+version
+```
+Expected: `version = 2.1.0c-dev` — the `c` suffix tells the controller this is community firmware, and the `2.1.0` prefix enables all v2.1.0 features.
+
+### Carvera Configuration
+
 **Key settings** (run in G-code console):
 
 ```gcode
@@ -1167,6 +1211,14 @@ This project is part of the broader Carvera community ecosystem:
 - **[Instructables Spindle Upgrade](https://www.instructables.com/Carvera-Spindle-Power-Upgrade-Stock-Motor/)** - Simpler DFR1036-based approach
 - **[carvera-teensy-moteus](https://github.com/airato/carvera-teensy-moteus)** - Alternative using Teensy + Moteus controller
 - **[r/carvera](https://www.reddit.com/r/carvera/)** - Reddit community for Carvera users
+
+---
+
+## Future Ideas
+
+Things that would be nice but may never happen:
+
+- **Custom PCB** — Replace the breadboard-style wiring with a purpose-built circuit board. A small PCB with headers for the Pico, ESCON signal connections, LCD connector, and buck converter input would eliminate most of the loose wiring and make the whole install much cleaner.
 
 ---
 
