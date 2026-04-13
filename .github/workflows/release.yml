@@ -33,7 +33,7 @@ jobs:
           cp target/thumbv8m.main-none-eabihf/release/carvera_spindle carvera_spindle.elf
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: carvera_spindle.elf
           generate_release_notes: true
